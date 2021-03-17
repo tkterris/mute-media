@@ -23,7 +23,7 @@ import java.util.List;
  * Created by txiao on 12/14/16.
  */
 
-public class PhoneNotificationListener extends NotificationListenerService {
+public class MuteMediaListenerService extends android.service.notification.NotificationListenerService {
 
     private Integer[] internalAudioDevicesArray = {AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,

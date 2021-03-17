@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class UnlockedTimerService extends NotificationListenerService {
 
     private static final String WORK_TAG = "backgroundRequestTag";
-    private static final long RUNS_PER_15_MINUTES = 60;
+    private static final long RUNS_PER_15_MINUTES = 5;
 
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override

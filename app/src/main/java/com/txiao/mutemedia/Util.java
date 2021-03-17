@@ -35,7 +35,7 @@ public class Util {
         notificationManager.notify(NOTIFICATION_ID, foregroundNotification);
 
         Log.i("muteMediaLogging", "configuring context in util");
-        Intent pushIntent = new Intent(context, PhoneNotificationListener.class);
+        Intent pushIntent = new Intent(context, MuteMediaListenerService.class);
         context.startForegroundService(pushIntent);
         pushIntent = new Intent(context, UnlockedTimerService.class);
         context.startForegroundService(pushIntent);
