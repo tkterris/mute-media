@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.txiao.mutemedia.R;
 
@@ -24,7 +25,8 @@ import com.txiao.mutemedia.R;
 public class Util {
 
     public static void configure(Context context) {
+        Log.i("muteMediaLogging", "configuring context in util");
         Intent pushIntent = new Intent(context, PhoneNotificationListener.class);
-        context.startService(pushIntent);
+        context.startForegroundService(pushIntent);
     }
 }

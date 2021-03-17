@@ -1,6 +1,9 @@
 package com.txiao.mutemedia;
 
 import android.app.KeyguardManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +14,8 @@ import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,6 +29,8 @@ import java.util.List;
 
 public class PhoneNotificationListener extends NotificationListenerService {
 
+    private String CHANNEL_ID = "background_service";
+    private int NOTIFICATION_ID = 1;
     private Integer[] internalAudioDevicesArray = {AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE,
@@ -45,6 +52,21 @@ public class PhoneNotificationListener extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
         configureLockCheck();
+
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_ID, NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(CHANNEL_ID);
+        // Register the channel with the system; you can't change the importance
+        // or other notification behaviors after this
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.small_icon)
+                .setContentTitle("Trevor's Background Service")
+                .setContentText("Hide this notification")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        Notification notification = builder.build();
+        notificationManager.notify(NOTIFICATION_ID, notification);
+        this.startForeground(NOTIFICATION_ID, notification);
     }
 
     @Override
