@@ -4,6 +4,7 @@ import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -44,23 +45,21 @@ public class MuteMediaListenerService extends android.service.notification.Notif
 
     @Override
     public void onCreate() {
-        super.onCreate();
-        configureLockCheck();
+        final IntentFilter screenFilter = new IntentFilter();
+        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        getApplicationContext().registerReceiver(mPowerKeyReceiver, screenFilter);
+    }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         this.startForeground(Util.NOTIFICATION_ID, Util.getForegroundNotification());
+
+        return Service.START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         getApplicationContext().unregisterReceiver(mPowerKeyReceiver);
-    }
-
-    public void configureLockCheck() {
-        final IntentFilter screenFilter = new IntentFilter();
-        /** System Defined Broadcast */
-        screenFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        getApplicationContext().registerReceiver(mPowerKeyReceiver, screenFilter);
     }
 
     private void muteMediaIfUnused(Context context) {

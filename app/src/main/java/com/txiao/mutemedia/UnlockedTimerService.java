@@ -29,7 +29,7 @@ public class UnlockedTimerService extends NotificationListenerService {
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("UnlockedTimerService", "in unlockReceiver, starting worker");
+            Log.i("UnlockedTimerService", "in unlockReceiver, starting workers");
             long timeOffset = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / RUNS_PER_15_MINUTES;
             for (int i = 0; i < RUNS_PER_15_MINUTES; i++) {
                 PeriodicWorkRequest backgroundRequest = new PeriodicWorkRequest
@@ -45,37 +45,38 @@ public class UnlockedTimerService extends NotificationListenerService {
     private BroadcastReceiver lockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("UnlockedTimerService", "in lockReceiver, stopping worker");
+            Log.i("UnlockedTimerService", "in lockReceiver, stopping workers");
             WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
         }
     };
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        configureLockCheck();
-        this.startForeground(Util.NOTIFICATION_ID, Util.getForegroundNotification());
-        return Service.START_STICKY;
-    }
-
-    @Override
-    public void onDestroy() {
-        Log.i("UnlockedTimerService", "firing onDestroy");
-        super.onDestroy();
-        getApplicationContext().unregisterReceiver(unlockReceiver);
-    }
-
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    public void configureLockCheck() {
+    public void onCreate() {
         final IntentFilter unlockFilter = new IntentFilter();
         unlockFilter.addAction(Intent.ACTION_SCREEN_ON);
         getApplicationContext().registerReceiver(unlockReceiver, unlockFilter);
         final IntentFilter lockFilter = new IntentFilter();
         lockFilter.addAction(Intent.ACTION_SCREEN_OFF);
         getApplicationContext().registerReceiver(lockReceiver, lockFilter);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        this.startForeground(Util.NOTIFICATION_ID, Util.getForegroundNotification());
+
+        return Service.START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("UnlockedTimerService", "firing onDestroy");
+        getApplicationContext().unregisterReceiver(unlockReceiver);
+        getApplicationContext().unregisterReceiver(lockReceiver);
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 }
