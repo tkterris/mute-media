@@ -22,7 +22,7 @@ public class BackgroundRequestWorker extends Worker {
     public Result doWork() {
         try {
             Log.i("BackgroundRequestWorker", "in doWork");
-            ActivityManager activityManager = (ActivityManager) super.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+            ActivityManager activityManager = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
             activityManager.killBackgroundProcesses(ALLIANT_CU_PACKAGE);
         } catch (Exception e) {
             //do nothing

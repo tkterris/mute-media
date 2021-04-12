@@ -1,9 +1,6 @@
 package com.txiao.mutemedia;
 
 import android.app.KeyguardManager;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,10 +9,6 @@ import android.content.IntentFilter;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.service.notification.NotificationListenerService;
-import android.service.notification.StatusBarNotification;
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,13 +17,19 @@ import java.util.List;
  * Created by txiao on 12/14/16.
  */
 
-public class MuteMediaListenerService extends android.service.notification.NotificationListenerService {
+public class MuteMediaListenerService extends NotificationListenerService {
 
-    private Integer[] internalAudioDevicesArray = {AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
+    private static final List<Integer> INTERNAL_AUDIO_DEVICES = Arrays.asList(
+            AudioDeviceInfo.TYPE_BUILTIN_EARPIECE,
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
             AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE,
-            AudioDeviceInfo.TYPE_TELEPHONY};
-    private List<Integer> internalAudioDevices = Arrays.asList(internalAudioDevicesArray);
+            AudioDeviceInfo.TYPE_TELEPHONY
+    );
+    private static final List<String> BACKGROUND_AUDIO_PACKAGES = Arrays.asList(
+            "com.google.android.apps.maps"
+    );
+
+    private boolean listenerConnected = false;
 
     private BroadcastReceiver mPowerKeyReceiver = new BroadcastReceiver() {
         @Override
@@ -52,28 +51,30 @@ public class MuteMediaListenerService extends android.service.notification.Notif
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        this.startForeground(Util.NOTIFICATION_ID, Util.getForegroundNotification());
+        return Util.startForeground(this);
+    }
 
-        return Service.START_STICKY;
+    @Override
+    public void onListenerConnected() {
+        this.listenerConnected = true;
     }
 
     @Override
     public void onDestroy() {
         getApplicationContext().unregisterReceiver(mPowerKeyReceiver);
+        Util.showServiceStoppedNotification(this);
     }
 
     private void muteMediaIfUnused(Context context) {
 
-        boolean mapsRunning = false;
-        for (StatusBarNotification notification : this.getActiveNotifications()) {
-            if ("com.google.android.apps.maps".equals(notification.getPackageName())) {
-                mapsRunning = true;
-            }
-        }
+        boolean backgroundAudioAppRunning = listenerConnected && Arrays.asList(this.getActiveNotifications())
+                .stream().anyMatch(notification ->
+                        BACKGROUND_AUDIO_PACKAGES.contains(notification.getPackageName()) && !notification.isClearable()
+                );
 
         //if no music is playing and we're not connected to a speaker other than phone audio, mute
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if (!audioManager.isMusicActive() && !externalAudioDevices(audioManager) && !mapsRunning) {
+        if (!audioManager.isMusicActive() && !externalAudioDevices(audioManager) && !backgroundAudioAppRunning) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
         }
     }
@@ -86,7 +87,7 @@ public class MuteMediaListenerService extends android.service.notification.Notif
     private boolean externalAudioDevices(AudioManager audioManager) {
         boolean externalAudioDevices = false;
         for (AudioDeviceInfo device : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
-            externalAudioDevices = externalAudioDevices || !internalAudioDevices.contains(device.getType());
+            externalAudioDevices = externalAudioDevices || !INTERNAL_AUDIO_DEVICES.contains(device.getType());
         }
         return externalAudioDevices;
     }

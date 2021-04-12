@@ -1,6 +1,5 @@
 package com.txiao.mutemedia;
 
-import android.app.KeyguardManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,16 +11,10 @@ import androidx.annotation.Nullable;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
-import android.service.notification.NotificationListenerService;
-import android.util.Log;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class UnlockedTimerService extends NotificationListenerService {
+public class UnlockedTimerService extends Service {
 
     private static final String WORK_TAG = "backgroundRequestTag";
     private static final long RUNS_PER_15_MINUTES = 5;
@@ -29,7 +22,6 @@ public class UnlockedTimerService extends NotificationListenerService {
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("UnlockedTimerService", "in unlockReceiver, starting workers");
             long timeOffset = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / RUNS_PER_15_MINUTES;
             for (int i = 0; i < RUNS_PER_15_MINUTES; i++) {
                 PeriodicWorkRequest backgroundRequest = new PeriodicWorkRequest
@@ -45,7 +37,6 @@ public class UnlockedTimerService extends NotificationListenerService {
     private BroadcastReceiver lockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i("UnlockedTimerService", "in lockReceiver, stopping workers");
             WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
         }
     };
@@ -62,16 +53,14 @@ public class UnlockedTimerService extends NotificationListenerService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        this.startForeground(Util.NOTIFICATION_ID, Util.getForegroundNotification());
-
-        return Service.START_STICKY;
+        return Util.startForeground(this);
     }
 
     @Override
     public void onDestroy() {
-        Log.i("UnlockedTimerService", "firing onDestroy");
         getApplicationContext().unregisterReceiver(unlockReceiver);
         getApplicationContext().unregisterReceiver(lockReceiver);
+        Util.showServiceStoppedNotification(this);
     }
 
     @Nullable
