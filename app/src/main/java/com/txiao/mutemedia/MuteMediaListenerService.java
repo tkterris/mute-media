@@ -1,7 +1,6 @@
 package com.txiao.mutemedia;
 
 import android.app.KeyguardManager;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -62,7 +61,7 @@ public class MuteMediaListenerService extends NotificationListenerService {
     @Override
     public void onDestroy() {
         getApplicationContext().unregisterReceiver(mPowerKeyReceiver);
-        Util.showServiceStoppedNotification(this);
+        Util.showServiceDestroyedNotification(this);
     }
 
     private void muteMediaIfUnused(Context context) {
@@ -85,10 +84,7 @@ public class MuteMediaListenerService extends NotificationListenerService {
     }
 
     private boolean externalAudioDevices(AudioManager audioManager) {
-        boolean externalAudioDevices = false;
-        for (AudioDeviceInfo device : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
-            externalAudioDevices = externalAudioDevices || !INTERNAL_AUDIO_DEVICES.contains(device.getType());
-        }
-        return externalAudioDevices;
+        return Arrays.stream(audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS))
+                .anyMatch(device -> !INTERNAL_AUDIO_DEVICES.contains(device.getType()));
     }
 }

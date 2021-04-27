@@ -60,7 +60,7 @@ public class UnlockedTimerService extends Service {
     public void onDestroy() {
         getApplicationContext().unregisterReceiver(unlockReceiver);
         getApplicationContext().unregisterReceiver(lockReceiver);
-        Util.showServiceStoppedNotification(this);
+        Util.showServiceDestroyedNotification(this);
     }
 
     @Nullable
