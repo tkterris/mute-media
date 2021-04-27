@@ -1,5 +1,6 @@
 package com.txiao.mutemedia;
 
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -25,6 +26,9 @@ public class Util {
     private static final String DESTROYED_SERVICE_CHANNEL_ID = "destroyed_service_notification";
     private static final String DESTROYED_SERVICE_CHANNEL_NAME = "Service stopped notification";
     private static final int DESTROYED_SERVICE_NOTIFICATION_ID = 2;
+
+    private static boolean lockReceiverHasFired = false;
+    private static boolean unlockReceiverHasFired = true;
 
     public static void configure(Context context) {
         NotificationChannel channel = new NotificationChannel(FOREGROUND_SERVICE_CHANNEL_ID, FOREGROUND_SERVICE_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
@@ -85,5 +89,30 @@ public class Util {
     private static void hideServiceDestroyedNotification(Context context) {
         NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
         notificationManager.cancel(DESTROYED_SERVICE_NOTIFICATION_ID);
+    }
+
+    public static boolean canFireLockEvent(Context context) {
+        boolean response = false;
+        if (isKeyguardLocked(context)) {
+            unlockReceiverHasFired = false;
+            response = !lockReceiverHasFired;
+        }
+        lockReceiverHasFired = true;
+        return response;
+    }
+
+    public static boolean canFireUnlockEvent(Context context) {
+        boolean response = false;
+        if (!isKeyguardLocked(context)) {
+            lockReceiverHasFired = false;
+            response = !unlockReceiverHasFired;
+        }
+        unlockReceiverHasFired = true;
+        return response;
+    }
+
+    public static boolean isKeyguardLocked(Context context) {
+        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return km.isKeyguardLocked();
     }
 }

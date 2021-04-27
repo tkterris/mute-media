@@ -34,7 +34,7 @@ public class MuteMediaListenerService extends NotificationListenerService {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if (Intent.ACTION_SCREEN_OFF.equals(action) && locked()) {
+            if (Intent.ACTION_SCREEN_OFF.equals(action) && Util.isKeyguardLocked(context)) {
                 //if the phone is locked, muteMediaIfUnused
                 muteMediaIfUnused(context);
             }
@@ -76,11 +76,6 @@ public class MuteMediaListenerService extends NotificationListenerService {
         if (!audioManager.isMusicActive() && !externalAudioDevices(audioManager) && !backgroundAudioAppRunning) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
         }
-    }
-
-    private boolean locked() {
-        KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-        return km.inKeyguardRestrictedInputMode();
     }
 
     private boolean externalAudioDevices(AudioManager audioManager) {

@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.annotation.Nullable;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -18,18 +20,23 @@ public class UnlockedTimerService extends Service {
 
     private static final String WORK_TAG = "backgroundRequestTag";
     private static final long RUNS_PER_15_MINUTES = 5;
+    private static final VibrationEffect VIBRATION_EFFECT = VibrationEffect.createOneShot(250, VibrationEffect.DEFAULT_AMPLITUDE);
+
+    private Vibrator vibrator = null;
 
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            long timeOffset = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / RUNS_PER_15_MINUTES;
-            for (int i = 0; i < RUNS_PER_15_MINUTES; i++) {
-                PeriodicWorkRequest backgroundRequest = new PeriodicWorkRequest
-                        .Builder(BackgroundRequestWorker.class, 15, TimeUnit.MINUTES)
-                        .setInitialDelay(timeOffset * i, TimeUnit.MILLISECONDS)
-                        .addTag(WORK_TAG)
-                        .build();
-                WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_TAG + i, ExistingPeriodicWorkPolicy.KEEP, backgroundRequest);
+            if (Util.canFireUnlockEvent(context)) {
+                long timeOffset = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / RUNS_PER_15_MINUTES;
+                for (int i = 0; i < RUNS_PER_15_MINUTES; i++) {
+                    PeriodicWorkRequest backgroundRequest = new PeriodicWorkRequest
+                            .Builder(BackgroundRequestWorker.class, 15, TimeUnit.MINUTES)
+                            .setInitialDelay(timeOffset * i, TimeUnit.MILLISECONDS)
+                            .addTag(WORK_TAG)
+                            .build();
+                    WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_TAG + i, ExistingPeriodicWorkPolicy.KEEP, backgroundRequest);
+                }
             }
         }
     };
@@ -37,14 +44,18 @@ public class UnlockedTimerService extends Service {
     private BroadcastReceiver lockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
+            if (Util.canFireLockEvent(context)) {
+                vibrator.vibrate(VIBRATION_EFFECT);
+                WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
+            }
         }
     };
 
     @Override
     public void onCreate() {
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         final IntentFilter unlockFilter = new IntentFilter();
-        unlockFilter.addAction(Intent.ACTION_SCREEN_ON);
+        unlockFilter.addAction(Intent.ACTION_USER_PRESENT);
         getApplicationContext().registerReceiver(unlockReceiver, unlockFilter);
         final IntentFilter lockFilter = new IntentFilter();
         lockFilter.addAction(Intent.ACTION_SCREEN_OFF);
