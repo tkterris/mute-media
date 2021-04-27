@@ -20,9 +20,6 @@ public class UnlockedTimerService extends Service {
 
     private static final String WORK_TAG = "backgroundRequestTag";
     private static final long RUNS_PER_15_MINUTES = 5;
-    private static final VibrationEffect VIBRATION_EFFECT = VibrationEffect.createOneShot(250, VibrationEffect.DEFAULT_AMPLITUDE);
-
-    private Vibrator vibrator = null;
 
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override
@@ -45,7 +42,6 @@ public class UnlockedTimerService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Util.canFireLockEvent(context)) {
-                vibrator.vibrate(VIBRATION_EFFECT);
                 WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
             }
         }
@@ -53,7 +49,6 @@ public class UnlockedTimerService extends Service {
 
     @Override
     public void onCreate() {
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         final IntentFilter unlockFilter = new IntentFilter();
         unlockFilter.addAction(Intent.ACTION_USER_PRESENT);
         getApplicationContext().registerReceiver(unlockReceiver, unlockFilter);
