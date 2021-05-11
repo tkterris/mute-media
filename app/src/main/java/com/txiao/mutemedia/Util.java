@@ -31,26 +31,15 @@ public class Util {
     private static boolean unlockReceiverHasFired = true;
 
     public static void configure(Context context) {
-        NotificationChannel channel = new NotificationChannel(FOREGROUND_SERVICE_CHANNEL_ID, FOREGROUND_SERVICE_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setDescription(FOREGROUND_SERVICE_CHANNEL_NAME);
-        // Register the channel with the system; you can't change the importance
-        // or other notification behaviors after this
-        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        notificationManager.createNotificationChannel(channel);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, FOREGROUND_SERVICE_CHANNEL_ID)
-                .setSmallIcon(R.drawable.small_icon)
-                .setContentTitle("Trevor's Background Service")
-                .setContentText("Hide this notification")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        foregroundNotification = builder.build();
-        notificationManager.notify(FOREGROUND_SERVICE_NOTIFICATION_ID, foregroundNotification);
+        getAndShowForegroundNotification(context);
 
         Intent pushIntent = new Intent(context, MuteMediaListenerService.class);
         context.startForegroundService(pushIntent);
         pushIntent = new Intent(context, UnlockedTimerService.class);
         context.startForegroundService(pushIntent);
 
-        hideServiceDestroyedNotification(context);
+        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        notificationManager.cancel(DESTROYED_SERVICE_NOTIFICATION_ID);
 
         CharSequence text = "Mute Media foreground service started";
         int duration = Toast.LENGTH_SHORT;
@@ -60,8 +49,28 @@ public class Util {
     }
 
     public static int startForeground(Service service) {
-        service.startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID, foregroundNotification);
+        service.startForeground(FOREGROUND_SERVICE_NOTIFICATION_ID,
+                getAndShowForegroundNotification(service));
         return Service.START_STICKY;
+    }
+
+    private static synchronized Notification getAndShowForegroundNotification(Context context) {
+        if (foregroundNotification == null) {
+            NotificationChannel channel = new NotificationChannel(FOREGROUND_SERVICE_CHANNEL_ID, FOREGROUND_SERVICE_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription(FOREGROUND_SERVICE_CHANNEL_NAME);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, FOREGROUND_SERVICE_CHANNEL_ID)
+                    .setSmallIcon(R.drawable.small_icon)
+                    .setContentTitle("Trevor's Background Service")
+                    .setContentText("Hide this notification")
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+            foregroundNotification = builder.build();
+            notificationManager.notify(FOREGROUND_SERVICE_NOTIFICATION_ID, foregroundNotification);
+        }
+        return foregroundNotification;
     }
 
     public static void showServiceDestroyedNotification(Context context) {
@@ -84,11 +93,6 @@ public class Util {
                 .setAutoCancel(true);
         Notification destroyedNotification = builder.build();
         notificationManager.notify(DESTROYED_SERVICE_NOTIFICATION_ID, destroyedNotification);
-    }
-
-    private static void hideServiceDestroyedNotification(Context context) {
-        NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        notificationManager.cancel(DESTROYED_SERVICE_NOTIFICATION_ID);
     }
 
     public static boolean canFireLockEvent(Context context) {
