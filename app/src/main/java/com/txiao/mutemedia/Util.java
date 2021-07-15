@@ -77,7 +77,7 @@ public class Util {
         //Create intent to launch main activity
         Intent mainActivityIntent = new Intent(context, MainActivity.class);
         mainActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, 0, mainActivityIntent, 0);
+        PendingIntent pendingMainActivityIntent = PendingIntent.getActivity(context, 0, mainActivityIntent, PendingIntent.FLAG_IMMUTABLE);
 
         NotificationChannel channel = new NotificationChannel(DESTROYED_SERVICE_CHANNEL_ID, DESTROYED_SERVICE_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
         channel.setDescription(DESTROYED_SERVICE_CHANNEL_NAME);
@@ -116,7 +116,9 @@ public class Util {
     }
 
     public static boolean isKeyguardLocked(Context context) {
-        KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-        return km.isKeyguardLocked();
+        //TODO: broken in Android 12 DP3? Potentially reenable if fixed in public release
+        //KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        //return km.isKeyguardLocked();
+        return true;
     }
 }

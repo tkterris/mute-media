@@ -1,6 +1,5 @@
 package com.txiao.mutemedia;
 
-import android.app.KeyguardManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -66,12 +65,14 @@ public class MuteMediaListenerService extends NotificationListenerService {
 
     private void muteMediaIfUnused(Context context) {
 
+        //checks if there's a permanent notification for a non-media app that uses media volume (e.g. Maps)
         boolean backgroundAudioAppRunning = listenerConnected && Arrays.asList(this.getActiveNotifications())
                 .stream().anyMatch(notification ->
                         BACKGROUND_AUDIO_PACKAGES.contains(notification.getPackageName()) && !notification.isClearable()
                 );
 
-        //if no music is playing and we're not connected to a speaker other than phone audio, mute
+        //if no non-media app that uses volume has a permanent notification, there's no media player active,
+        //and we're not connected to a speaker other than phone audio, mute
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if (!audioManager.isMusicActive() && !externalAudioDevices(audioManager) && !backgroundAudioAppRunning) {
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
