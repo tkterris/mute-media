@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 
 import androidx.annotation.Nullable;
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -24,7 +22,8 @@ public class UnlockedTimerService extends Service {
     private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Util.canFireUnlockEvent(context)) {
+            //TODO: uncomment in Android 12 public release if keyguard is fixed (see Util.java)
+            //if (Util.canFireUnlockEvent(context)) {
                 long timeOffset = PeriodicWorkRequest.MIN_PERIODIC_INTERVAL_MILLIS / RUNS_PER_15_MINUTES;
                 for (int i = 0; i < RUNS_PER_15_MINUTES; i++) {
                     PeriodicWorkRequest backgroundRequest = new PeriodicWorkRequest
@@ -34,16 +33,17 @@ public class UnlockedTimerService extends Service {
                             .build();
                     WorkManager.getInstance(context).enqueueUniquePeriodicWork(WORK_TAG + i, ExistingPeriodicWorkPolicy.KEEP, backgroundRequest);
                 }
-            }
+            //}
         }
     };
 
     private BroadcastReceiver lockReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (Util.canFireLockEvent(context)) {
+            //TODO: uncomment in Android 12 public release if keyguard is fixed (see Util.java)
+            //if (Util.canFireLockEvent(context)) {
                 WorkManager.getInstance(context).cancelAllWorkByTag(WORK_TAG);
-            }
+            //}
         }
     };
 
