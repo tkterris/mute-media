@@ -1,4 +1,4 @@
-package com.txiao.mutemedia;
+package com.tterris.mutemedia;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by txiao on 12/14/16.
+ * Created by tterris on 12/14/16.
  */
 
 public class MuteMediaListenerService extends NotificationListenerService {

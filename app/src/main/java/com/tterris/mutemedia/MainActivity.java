@@ -1,4 +1,4 @@
-package com.txiao.mutemedia;
+package com.tterris.mutemedia;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;

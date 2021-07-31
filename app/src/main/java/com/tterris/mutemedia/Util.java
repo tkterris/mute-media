@@ -1,6 +1,5 @@
-package com.txiao.mutemedia;
+package com.tterris.mutemedia;
 
-import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,7 +12,7 @@ import androidx.core.app.NotificationCompat;
 import android.widget.Toast;
 
 /**
- * Created by txiao on 3/13/18.
+ * Created by tterris on 3/13/18.
  */
 
 public class Util {
@@ -34,8 +33,6 @@ public class Util {
         getAndShowForegroundNotification(context);
 
         Intent pushIntent = new Intent(context, MuteMediaListenerService.class);
-        context.startForegroundService(pushIntent);
-        pushIntent = new Intent(context, UnlockedTimerService.class);
         context.startForegroundService(pushIntent);
 
         NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
