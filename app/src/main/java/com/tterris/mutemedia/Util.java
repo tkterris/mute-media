@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import androidx.core.app.NotificationCompat;
+
+import android.provider.Settings;
 import android.widget.Toast;
 
 /**
@@ -20,7 +22,7 @@ public class Util {
     private static Notification foregroundNotification = null;
 
     private static final String FOREGROUND_SERVICE_CHANNEL_ID = "foreground_service_notification";
-    private static final String FOREGROUND_SERVICE_CHANNEL_NAME = "Foreground service notification";
+    private static final String FOREGROUND_SERVICE_CHANNEL_NAME = "Hide this notification (foreground service)";
     private static final int FOREGROUND_SERVICE_NOTIFICATION_ID = 1;
     private static final String DESTROYED_SERVICE_CHANNEL_ID = "destroyed_service_notification";
     private static final String DESTROYED_SERVICE_CHANNEL_NAME = "Service stopped notification";
@@ -53,6 +55,10 @@ public class Util {
 
     private static synchronized Notification getAndShowForegroundNotification(Context context) {
         if (foregroundNotification == null) {
+            //Create intent to launch notification settings
+            Intent notificationSettingsIntent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            PendingIntent pendingNotificationSettingsIntent = PendingIntent.getActivity(context, 0, notificationSettingsIntent, PendingIntent.FLAG_IMMUTABLE);
+
             NotificationChannel channel = new NotificationChannel(FOREGROUND_SERVICE_CHANNEL_ID, FOREGROUND_SERVICE_CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription(FOREGROUND_SERVICE_CHANNEL_NAME);
             // Register the channel with the system; you can't change the importance
@@ -63,6 +69,7 @@ public class Util {
                     .setSmallIcon(R.drawable.mute_media_icon)
                     .setContentTitle("Mute Media Background Service")
                     .setContentText("Hide this notification")
+                    .setContentIntent(pendingNotificationSettingsIntent)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
             foregroundNotification = builder.build();
             notificationManager.notify(FOREGROUND_SERVICE_NOTIFICATION_ID, foregroundNotification);
