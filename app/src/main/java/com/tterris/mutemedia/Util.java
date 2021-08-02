@@ -60,8 +60,8 @@ public class Util {
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, FOREGROUND_SERVICE_CHANNEL_ID)
-                    .setSmallIcon(R.drawable.small_icon)
-                    .setContentTitle("Trevor's Background Service")
+                    .setSmallIcon(R.drawable.mute_media_icon)
+                    .setContentTitle("Mute Media Background Service")
                     .setContentText("Hide this notification")
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT);
             foregroundNotification = builder.build();
@@ -82,7 +82,7 @@ public class Util {
         notificationManager.createNotificationChannel(channel);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, DESTROYED_SERVICE_CHANNEL_ID)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setSmallIcon(R.drawable.small_icon)
+                .setSmallIcon(R.drawable.mute_media_icon)
                 .setContentTitle("The Mute Media foreground service was stopped")
                 .setContentText("Tap this notification to restart the service")
                 //Call main activity intent when tapped, and close notification
